@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 contract ERC721{
     event Transfer(address indexed from , address indexed to,uint256 indexed tokenId);
+    event Approval(address indexed owner , address indexed approved , uint256 indexed tokenId);
     //mapping from tokenId to the owner
     mapping(uint=>address)private tokenOwner;
     //mapping from owner to number of owned tokens
@@ -42,5 +43,12 @@ contract ERC721{
     }
     function transferFrom(address _from,address _to,uint256 tokenId)public{
         _transferFrom(_from, _to, tokenId);
+    }
+    function isApprovedOrOwner(address spender,uint256 tokenId)public view returns(bool){
+        //check if the spender is the owner of the token
+        address owner = ownerOf(tokenId);
+        //check if the spender is approved for the token
+        //getApproved(tokenId) returns the address of the approved spender to be implemented ;
+        return (spender==owner );
     }
 }
