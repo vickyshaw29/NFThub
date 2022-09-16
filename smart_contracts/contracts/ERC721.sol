@@ -1,15 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "./ERC165.sol";
+import "./interfaces/IERC721.sol";
 
-contract ERC721{
-    event Transfer(address indexed from , address indexed to,uint256 indexed tokenId);
-    event Approval(address indexed owner , address indexed approved , uint256 indexed tokenId);
+contract ERC721 is ERC165,IERC721{
     //mapping from tokenId to the owner
     mapping(uint=>address)private tokenOwner;
     //mapping from owner to number of owned tokens
     mapping(address=>uint) private ownedToken;
     //mapping from tokenId to approved addresses 
     mapping(uint256=>address) private tokenApprovals;
+
+     constructor() {
+        _registerInterface(
+            bytes4(
+                keccak256("balanceOf(bytes4)") ^
+                    keccak256("ownerOf(bytes4)") ^
+                    keccak256("transferFrom(bytes4)")
+            )
+        );
+    }
 
     function _exists(uint256 tokenId)internal view returns(bool){
         address owner =tokenOwner[tokenId];
@@ -22,18 +32,18 @@ contract ERC721{
         ownedToken[to]+=1;
         emit Transfer(address(0), to, tokenId);
     }
-    function balanceOf(address owner)public view returns(uint256){
+    function balanceOf(address owner)public view override returns(uint256){
         require(owner!=address(0),"Invalid owner");
         return ownedToken[owner];
     }
-    function ownerOf(uint256 tokenId)public view returns(address){
+    function ownerOf(uint256 tokenId)public view override returns(address){
         address owner = tokenOwner[tokenId];
         require(owner!=address(0),"Invalid owner");
         return owner;
     }
 
     //transfer 
-    function _transferFrom(address _from,address _to,uint256 tokenId)internal{
+    function _transferFrom(address _from,address _to,uint256 tokenId)internal {
         require(_to!=address(0),"Invalid address");
         require(ownerOf(tokenId)==_from,"You dont have tokens to transfer");
         ownedToken[_from]-=1;
@@ -41,7 +51,7 @@ contract ERC721{
         tokenOwner[tokenId]=_to;
         emit Transfer(_from, _to, tokenId);
     }
-    function transferFrom(address _from,address _to,uint256 tokenId)public{
+    function transferFrom(address _from,address _to,uint256 tokenId)public override payable{
         _transferFrom(_from, _to, tokenId);
     }
     function isApprovedOrOwner(address spender,uint256 tokenId)public view returns(bool){
